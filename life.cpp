@@ -168,7 +168,6 @@ char animateType(string animating) {
 // Counts the number of neighbors in all rows in the left/right columns adjacent to the cell
 // of interest. Achieves that by taking as an input the range of rows to examine and the actual column
 void rightLeftHandNeighbor(Grid<char> &grid, int &neighbors, int rowsStart, int rowsEnding, int col) {
-
     for (int i=rowsStart; i<=rowsEnding; i++) {
         if (grid[i][col] != '-') {
             ++ neighbors;
@@ -178,36 +177,29 @@ void rightLeftHandNeighbor(Grid<char> &grid, int &neighbors, int rowsStart, int 
 
 // Counts the number of neighbors in the same column as the cell of interest.
 void centerNeighbor(Grid<char> &grid, int &neighbors, int row, int col) {
-        if (grid[row][col] != '-') {
+    if (grid[row][col] != '-') {
             ++ neighbors;
-        }
+    }
 }
 
 // Established the state of the cell based on the number of neighbors.
 char gridElementDecision(int neighbors, char element) {
     switch(neighbors) {
         case 0:
-            return '-';
-            break;
-
         case 1:
             return '-';
             break;
-
         case 2:
             return element;
             break;
-
         case 3:
             return 'X';
             break;
-
         default:
             return '-';
             break;
     }
 }
-
 
 // Established the number of neighbors based on the column in which the cell of intetst is located
 // and if wrapping occures.
@@ -250,7 +242,7 @@ int correctInputInteger(string format, int num) {
     for (int i=0; i< (int) format.length(); i++) {
         if (isdigit(format[i])) {
                 ++num;
-            }
+        }
     }
     return num;
 }
@@ -259,7 +251,6 @@ int correctInputInteger(string format, int num) {
 // Returns integer stating the number of cycles of bacteria procreation will be performed.
 int animationLoops(char animation) {
     int counter = 0;
-
     // Animation for the tick option.
     if (animation == 't') {
         counter = 1;
@@ -267,7 +258,6 @@ int animationLoops(char animation) {
 
     else if (animation == 'a') {
         string format = getLine("How many frames? ");
-
         // Checks if the input was an integer.
         int num = correctInputInteger(format, 0);
 
@@ -275,7 +265,7 @@ int animationLoops(char animation) {
         while (num != (int) format.length()) {
             cout << "Illigal integer format. Try again." << endl;
             format = getLine("How many frames? ");
-            int num = correctInputInteger(format, 0);
+            num = correctInputInteger(format, 0);
         }
         // If input was an integer changes it from a string format to an int.
         counter = stoi(format);
@@ -353,10 +343,10 @@ void gridNonWrapping(Grid<char> &grid, char animation, int rows, int cols) {
 void gridWrapping(Grid<char> &grid, char animation, int rows, int cols) {
     Grid<char> animationGrid(rows, cols);
 
-        if (animation == 'a') {
-            cout << "yeah" << endl;
-            clearConsole();
-            pause(50);
+    if (animation == 'a') {
+        cout << "yeah" << endl;
+        clearConsole();
+        pause(50);
         }
 
         for (int i=0; i<rows; i++) {
@@ -408,7 +398,6 @@ void gridWrapping(Grid<char> &grid, char animation, int rows, int cols) {
         nicePlot(rows, cols, animationGrid);
         grid = animationGrid;
 }
-
 
 // Simulation of the bacteria procreation.
 void bacteriaGrowth(Grid<char> &grid, int rows, int cols, char wrapping, char animation) {
@@ -526,8 +515,10 @@ int main() {
 
 
     // Defines user based variables.
-    string fileName, inputVaribleWrapping, movement, inputVeriableAnimation;
-    char wrapping, animation;
+    string inputVeriableAnimation = "placeholder";
+    string inputVaribleWrapping = inputVeriableAnimation;
+    string fileName, movement;
+    char wrapping = 'n', animation = 'a';
 
     // Taking file name input from the user.
     fileName = getLine("Grid input file name? ");
