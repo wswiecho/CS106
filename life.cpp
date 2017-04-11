@@ -78,6 +78,7 @@ void dataExtraction(string fileName, Grid<char> &grid, int &rows, int & cols) {
     string lineBody, lineRows, lineCols;
 
         openFile(inputFile, fileName);
+
         if (inputFile.is_open()) {
 
             getline(inputFile, lineRows);
@@ -237,16 +238,6 @@ void columnSum(Grid<char> &grid, int & neighbors, int i, int k, int j, int cols,
     }
 }
 
-// Checks if user input is an integer.
-int correctInputInteger(string format, int num) {
-    for (int i=0; i< (int) format.length(); i++) {
-        if (isdigit(format[i])) {
-                ++num;
-        }
-    }
-    return num;
-}
-
 // Established how many times an animation is performed and reprompts the user if the input was invalid.
 // Returns integer stating the number of cycles of bacteria procreation will be performed.
 int animationLoops(char animation) {
@@ -257,22 +248,11 @@ int animationLoops(char animation) {
     }
 
     else if (animation == 'a') {
-        string format = getLine("How many frames? ");
-        // Checks if the input was an integer.
-        int num = correctInputInteger(format, 0);
-
-        // Reprompts the user if the input was not an integer.
-        while (num != (int) format.length()) {
-            cout << "Illigal integer format. Try again." << endl;
-            format = getLine("How many frames? ");
-            num = correctInputInteger(format, 0);
-        }
-        // If input was an integer changes it from a string format to an int.
-        counter = stoi(format);
+        // Prompts user for the number of frames/
+        counter = getInteger("How many frames? ");
     }
     return counter;
 }
-
 
 // Growth of bacteria animation based on the non wrapping animation.
 void gridNonWrapping(Grid<char> &grid, char animation, int rows, int cols) {
@@ -280,7 +260,7 @@ void gridNonWrapping(Grid<char> &grid, char animation, int rows, int cols) {
 
     // Clears the consol and pauses before new iteration output. Only for animation
     if (animation == 'a') {
-        cout << "yeah" << endl;
+        cout << "Clears consol" << endl;
         clearConsole();
         pause(50);
     }
@@ -344,7 +324,7 @@ void gridWrapping(Grid<char> &grid, char animation, int rows, int cols) {
     Grid<char> animationGrid(rows, cols);
 
     if (animation == 'a') {
-        cout << "yeah" << endl;
+        cout << "Clears consol" << endl;
         clearConsole();
         pause(50);
         }
@@ -501,8 +481,6 @@ void animationWrapperGrid(string inputVaribleWrapping, string inputVeriableAnima
         animation =  animateType(inputVeriableAnimation);
     }
 }
-
-
 
 int main() {
 
