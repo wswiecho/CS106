@@ -37,8 +37,7 @@ using namespace std;
 
 
 // Generates gui diplay of the bacteria procreation cycle.
-void nicePlot(int rows, int cols, Grid<char> &grid) {
-    LifeGUI name;
+void nicePlot(int rows, int cols, Grid<char> &grid, LifeGUI::LifeGUI &name) {
     name.resize(rows, cols);
 
     for (int i=0; i<rows; i++) {
@@ -243,30 +242,31 @@ void columnSum(Grid<char> &grid, int & neighbors, int i, int k, int j, int cols,
 // Established how many times an animation is performed and reprompts the user if the input was invalid.
 // Returns integer stating the number of cycles of bacteria procreation will be performed.
 int animationLoops(char animation) {
-    int counter = 0;
     // Animation for the tick option.
     if (animation == 't') {
-        counter = 1;
+        return 1;
     }
 
     else if (animation == 'a') {
-        // Prompts user for the number of frames/
-        counter = getInteger("How many frames? ");
+        // Prompts user for the number of frames.
+        return getInteger("How many frames? ");
     }
-    return counter;
+
+    else {
+        return 0;
+    }
 }
 
 // Growth of bacteria animation based on the non wrapping animation.
-void gridNonWrapping(Grid<char> &grid, char animation, int rows, int cols) {
+void gridNonWrapping(Grid<char> &grid, char animation, int rows, int cols, LifeGUI::LifeGUI &name) {
     Grid<char> animationGrid(rows, cols);
-
-    // Clears the consol and pauses before new iteration output. Only for animation
-   /* if (animation == 'a') {
-        cout << "Clears consol" << endl;
+    if (animation == 'a') {
+        cout << endl;
         clearConsole();
         pause(50);
-    }*/
+    }
 
+    // Clears the consol and pauses before new iteration output. Only for animation
     // Defines elements of the new state of the grid.
     for (int i=0; i<rows; i++) {
 
@@ -315,23 +315,20 @@ void gridNonWrapping(Grid<char> &grid, char animation, int rows, int cols) {
         cout << "\n";
     }
     // Displays gui grid.
-    nicePlot(rows, cols, animationGrid);
+    nicePlot(rows, cols, animationGrid, name);
     // Replaces old grid with the updated version.
     grid = animationGrid;
 }
 
 // Growth of bacteria animation based on the wrapping animation. Similar to the
 // above functions with addition neighbors counts because of wrapping.
-void gridWrapping(Grid<char> &grid, char animation, int rows, int cols) {
+void gridWrapping(Grid<char> &grid, char animation, int rows, int cols, LifeGUI::LifeGUI &name) {
     Grid<char> animationGrid(rows, cols);
-
-    /*if (animation == 'a') {
-        cout << "Clears consol" << endl;
+    if (animation == 'a') {
+        cout << endl;
         clearConsole();
         pause(50);
-      }*/
-
-
+    }
     for (int i=0; i<rows; i++) {
 
         for (int j=0; j<cols; j++) {
@@ -342,7 +339,7 @@ void gridWrapping(Grid<char> &grid, char animation, int rows, int cols) {
                 columnSum(grid, neighbors, i, i+1, j, cols, 'y');
                 columnSum(grid, neighbors, rows-1, rows-1, j, cols, 'y');
 
-                // Checking below element   
+                // Checking below element
                 centerNeighbor(grid, neighbors, i+1, j);
                 centerNeighbor(grid, neighbors, rows-1, j);
 
@@ -379,22 +376,25 @@ void gridWrapping(Grid<char> &grid, char animation, int rows, int cols) {
         }
         cout << "\n";
     }
-    nicePlot(rows, cols, animationGrid);
+    nicePlot(rows, cols, animationGrid, name);
+
     grid = animationGrid;
 }
 
 // Simulation of the bacteria procreation.
-void bacteriaGrowth(Grid<char> &grid, int rows, int cols, char wrapping, char animation) {
+void bacteriaGrowth(Grid<char> &grid, int rows, int cols, char wrapping, char animation,
+                    LifeGUI::LifeGUI &name
+                    ) {
     // Displays gui grid with the locations of living bacterias.
-    nicePlot(rows, cols, grid);
+    nicePlot(rows, cols, grid, name);
 
     int numberOfLoops = animationLoops(animation);
     // Without wrapping.
     if (wrapping == 'n') {
         // Establishes how many iterations of the grid will be displayed.
         for (int k=0; k<numberOfLoops; k++) {
-            gridNonWrapping(grid, animation, rows, cols);
-            nicePlot(rows, cols, grid);
+            gridNonWrapping(grid, animation, rows, cols, name);
+            nicePlot(rows, cols, grid, name);
         }
     }
 
@@ -402,8 +402,8 @@ void bacteriaGrowth(Grid<char> &grid, int rows, int cols, char wrapping, char an
     else {
         // Establishes how many iterations of the grid will be displayed.
         for (int k=0; k<numberOfLoops; k++) {
-            gridWrapping(grid, animation, rows, cols);
-            nicePlot(rows, cols, grid);
+            gridWrapping(grid, animation, rows, cols, name);
+            nicePlot(rows, cols, grid, name);
         }
     }
 }
@@ -443,20 +443,7 @@ void animationWrapperGrid(string inputVaribleWrapping, string inputVeriableAnima
         if (wrapping == 'n') {
             // Establishes how many iterations of the grid will be displayed.
             for (int k=0; k<numberOfLoops; k++) {
-                gridNonWrapping(grid, animation, rows, cols);
-
-                // Updates display for the gui window
-                for (int i=0; i<rows; i++) {
-                    for (int j=0; j<cols; j++) {
-                        if (grid[i][j] == '-') {
-                            name.drawCell(i, j, false);
-                        }
-                        else {
-                            name.drawCell(i, j, true);
-                        }
-                    }
-                }
-
+                gridNonWrapping(grid, animation, rows, cols, name);
             }
         }
 
@@ -464,21 +451,7 @@ void animationWrapperGrid(string inputVaribleWrapping, string inputVeriableAnima
         else {
             // Establishes how many iterations of the grid will be displayed.
             for (int k=0; k<numberOfLoops; k++) {
-                gridWrapping(grid, animation, rows, cols);
-
-                // // Updates display for the gui window
-                for (int i=0; i<rows; i++) {
-                    for (int j=0; j<cols; j++) {
-
-                        if (grid[i][j] == '-') {
-                            name.drawCell(i, j, false);
-                        }
-                        else {
-                            name.drawCell(i, j, true);
-                        }
-                    }
-                }
-
+                gridWrapping(grid, animation, rows, cols, name);
             }
         }
         // Prompts user for the animation input and checks its validity.
@@ -555,3 +528,4 @@ int main() {
     cout << "Have a nice Life!" << endl;
     return 0;
 }
+
