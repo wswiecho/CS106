@@ -92,8 +92,10 @@ void dataExtraction(string fileName, Grid<char> &grid, int &rows, int & cols) {
 
                 while (!inputFile.eof()) {
                     getline(inputFile, lineBody);
-                    makeGrid(lineBody, rowidx, grid);
-                    ++ rowidx;
+                    if (rowidx<rows) {
+                        makeGrid(lineBody, rowidx, grid);
+                        ++rowidx;
+                    }
                 }
             }
 
@@ -259,11 +261,11 @@ void gridNonWrapping(Grid<char> &grid, char animation, int rows, int cols) {
     Grid<char> animationGrid(rows, cols);
 
     // Clears the consol and pauses before new iteration output. Only for animation
-    if (animation == 'a') {
+   /* if (animation == 'a') {
         cout << "Clears consol" << endl;
         clearConsole();
         pause(50);
-    }
+    }*/
 
     // Defines elements of the new state of the grid.
     for (int i=0; i<rows; i++) {
@@ -323,60 +325,62 @@ void gridNonWrapping(Grid<char> &grid, char animation, int rows, int cols) {
 void gridWrapping(Grid<char> &grid, char animation, int rows, int cols) {
     Grid<char> animationGrid(rows, cols);
 
-    if (animation == 'a') {
+    /*if (animation == 'a') {
         cout << "Clears consol" << endl;
         clearConsole();
         pause(50);
-        }
+      }*/
 
-        for (int i=0; i<rows; i++) {
 
-            for (int j=0; j<cols; j++) {
-                int neighbors = 0;
-                // Animation for the last row which wraps around to the last row.
-                if (i==0 && i+1!= rows) {
-                    // Gets the left and right hand side columns handeled.
-                    columnSum(grid, neighbors, i, i+1, j, cols, 'y');
-                    columnSum(grid, neighbors, rows-1, rows-1, j, cols, 'y');
+    for (int i=0; i<rows; i++) {
 
-                // Checking below element
-                    centerNeighbor(grid, neighbors, i+1, j);
-                    centerNeighbor(grid, neighbors, rows-1, j);
+        for (int j=0; j<cols; j++) {
+            int neighbors = 0;
+            // Animation for the last row which wraps around to the last row.
+            if (i==0 && i+1!= rows) {
+                // Gets the left and right hand side columns handeled.
+                columnSum(grid, neighbors, i, i+1, j, cols, 'y');
+                columnSum(grid, neighbors, rows-1, rows-1, j, cols, 'y');
 
-                    animationGrid[i][j] = gridElementDecision(neighbors, grid[i][j]);
-                    cout << animationGrid[i][j];
-                }
+                // Checking below element   
+                centerNeighbor(grid, neighbors, i+1, j);
+                centerNeighbor(grid, neighbors, rows-1, j);
 
-                else if (i<=rows-2) {
-                    // Gets the left and right hand side columns handeled.
-                    columnSum(grid, neighbors, i-1, i+1, j, cols, 'y');
-
-                    // Checking elements in the same column as the cell of interest.
-                    centerNeighbor(grid, neighbors, i-1, j);
-                    centerNeighbor(grid, neighbors, i+1, j);
-
-                    animationGrid[i][j] = gridElementDecision(neighbors, grid[i][j]);
-                    cout << animationGrid[i][j];
-                }
-
-                // Animation for the last row which wraps around to the first row.
-                else if (i == rows-1) {
-                    // Gets the left and right hand side columns handeled.
-                    columnSum(grid, neighbors, i-1, i, j, cols, 'y');
-                    columnSum(grid, neighbors, 0, 0, j, cols, 'y');
-
-                    // Checking above element
-                    centerNeighbor(grid, neighbors, i-1, j);
-                    centerNeighbor(grid, neighbors, 0, j);
-
-                    animationGrid[i][j] = gridElementDecision(neighbors, grid[i][j]);
-                    cout << animationGrid[i][j];
-                }
+                animationGrid[i][j] = gridElementDecision(neighbors, grid[i][j]);
+                cout << animationGrid[i][j];
             }
-            cout << "\n";
+
+            else if (i<=rows-2) {
+
+                // Gets the left and right hand side columns handeled.
+                columnSum(grid, neighbors, i-1, i+1, j, cols, 'y');
+
+                // Checking elements in the same column as the cell of interest.
+                centerNeighbor(grid, neighbors, i-1, j);
+                centerNeighbor(grid, neighbors, i+1, j);
+
+                animationGrid[i][j] = gridElementDecision(neighbors, grid[i][j]);
+                cout << animationGrid[i][j];
+            }
+
+            // Animation for the last row which wraps around to the first row.
+            else if (i == rows-1) {
+                // Gets the left and right hand side columns handeled.
+                columnSum(grid, neighbors, i-1, i, j, cols, 'y');
+                columnSum(grid, neighbors, 0, 0, j, cols, 'y');
+
+                // Checking above element
+                centerNeighbor(grid, neighbors, i-1, j);
+                centerNeighbor(grid, neighbors, 0, j);
+
+                animationGrid[i][j] = gridElementDecision(neighbors, grid[i][j]);
+                cout << animationGrid[i][j];
+            }
         }
-        nicePlot(rows, cols, animationGrid);
-        grid = animationGrid;
+        cout << "\n";
+    }
+    nicePlot(rows, cols, animationGrid);
+    grid = animationGrid;
 }
 
 // Simulation of the bacteria procreation.
@@ -514,7 +518,8 @@ int main() {
 
         // Defines file based variables
         Grid<char> grid;
-        int cols, rows;
+        int cols = 0;
+        int rows = 0;
 
         // Extracts information from the file.
         dataExtraction(fileName, grid, rows, cols);
