@@ -8,7 +8,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include <vector>
+#include "queue.h"
 #include "console.h"
 #include "filelib.h"
 #include "simpio.h"
@@ -18,6 +18,7 @@
 
 using namespace std;
 
+// Reads the input file from the user.
 void fileRead(string &fileName) {
     fileName = getLine("Dictionary file name? ");
             while (fileName != "dictionary.txt") {
@@ -26,23 +27,16 @@ void fileRead(string &fileName) {
             }
 }
 
-// Prompts the user for the two dictionary words and checks their validity.
-/*
- * -change to lowercase
- * -the same length
- * -different words
- */
-
-
+// Checks if a given input word is in the dictionary.
 void wordInDict(string &word, Lexicon::Lexicon &english, string num) {
-    string combination = "Word # "+ num +"(or Enter to quit): ";
+    string combination = "Word #"+ num +" (or Enter to quit): ";
     if(word.length()>0) {
         for(int i=0; i< word.length(); i++) {
             word[i] = tolower(word[i]);
         }
 
     }
-    while(!english.contains(word) && word.length() !=0) {
+    while(!english.contains(word) && word.length() >0) {
         cout << "The word you entered is not valid. Try again. \n";
         word = getLine(combination);
     }
@@ -50,7 +44,7 @@ void wordInDict(string &word, Lexicon::Lexicon &english, string num) {
 
 // Checks if words 1 and 2 are different.
 string theSameWords(string &wordOne, string &wordTwo, Lexicon::Lexicon &english){
-    while(wordOne.compare(wordTwo) == 0) {
+    while(wordOne.compare(wordTwo) == 0 && wordOne.length()>0) {
         cout << "Word #2 must be different than Word #1." << endl;
         wordTwo = getLine("Word #2 (or Enter to quit): ");
         wordInDict(wordTwo, english, "2");
@@ -60,37 +54,117 @@ string theSameWords(string &wordOne, string &wordTwo, Lexicon::Lexicon &english)
 }
 
 void wordsOutput(string &wordOne, string &wordTwo, Lexicon::Lexicon &english) {
-    // Prompts the user for the first word.
-    //wordOne = getLine("Word #1 (or Enter to quit): ");
+
     wordInDict(wordOne, english, "1");
 
-    // Prompts the user for the second word.
-    wordTwo = getLine("Word #2 (or Enter to quit): ");
-    wordInDict(wordTwo, english, "2");
+    if (wordOne.length() > 0) {
 
-    // Checks if the word entered is valid.
-    int comparison = wordOne.compare(wordTwo);
-
-    // Reprompts the user if Word #1 and Word #2 are the same.
-    wordTwo = theSameWords(wordOne, wordTwo, english);
-
-    while(wordOne.length() != wordTwo.length() && wordTwo.length()!=0) {
-        if(wordOne.length() != wordTwo.length()) {
-            cout << "The length of Word # 2 is incorrect. Enter a word of length "
-                 << wordOne.length() << "." << endl;
-        }
-
-        else {
-            cout << "Invalid word." << endl;
-        }
-
-        // Reprompts the user for new Word #2.
+        // Prompts the user for the second word.
         wordTwo = getLine("Word #2 (or Enter to quit): ");
         wordInDict(wordTwo, english, "2");
+
+        // Checks if the word entered is valid.
+        int comparison = wordOne.compare(wordTwo);
+
+        // Reprompts the user if Word #1 and Word #2 are the same.
         wordTwo = theSameWords(wordOne, wordTwo, english);
+
+        while(wordOne.length() != wordTwo.length() && wordTwo.length()!=0) {
+
+            if(wordOne.length() != wordTwo.length()) {
+
+                cout << "The length of Word # 2 is incorrect. Enter a word of length "
+                 << wordOne.length() << "." << endl;
+            }
+
+            else {
+                cout << "Invalid word." << endl;
+            }
+
+            // Reprompts the user for new Word #2.
+            wordTwo = getLine("Word #2 (or Enter to quit): ");
+            wordInDict(wordTwo, english, "2");
+            wordTwo = theSameWords(wordOne, wordTwo, english);
+        }
+    }
+}
+
+// Generates the ladder of words using the algorithm.
+void ladder(string wordOne, string wordTwo, Lexicon::Lexicon &english) {
+
+    // Defines all structures that will be used in this function.
+    Set<string> setOfWords;
+    Stack<string> initialStack, partialLadderHolder, updatedStack;
+    string possibleNewWord, wordHolder;
+    string alphabet = "abcdefghijklmnopqrstuvwxyz";
+    Queue< Stack<string> > ladderWithWords;
+
+    // Adds Word #1 to stack and then adds the stack to the queue.
+    initialStack.push(wordOne);
+    ladderWithWords.enqueue(initialStack);
+
+    // Preserves unique words that were unsed in the ladder.
+    setOfWords.add(wordOne);
+
+    // Defines the ladder between two words if exists.
+    while (!ladderWithWords.isEmpty()) {
+
+        // Gets the partial-ladder stack from the queue.
+        partialLadderHolder = ladderWithWords.dequeue();
+
+        // Gets the last word in the partial ladder.
+        wordHolder = partialLadderHolder.peek();
+
+        // Prints the output of the shortest ladder if such exists.
+        if (wordHolder == wordTwo) {
+
+            cout << "Ladder from " << wordTwo << " back to "<< wordOne << ":" << endl;
+
+            // Output the elements of the stack as the solution.
+            while(!partialLadderHolder.isEmpty()) {
+
+                cout << partialLadderHolder.pop();
+                if (!partialLadderHolder.isEmpty()) {
+                    cout << " ";
+                }
+            }
+
+            cout << "\n";
+        }
+
+        /* Gets the neighboring words by iterating over the original word and
+         * all letters in the alphabet. Also appends new word to the ladder if
+         * it wasn't used previously. Finally, updates a set, a copy of the
+         * stack and the queue with the stack words with the new word.
+         */
+        else {
+
+            for (int i = 0; i < wordHolder.length(); i++) {
+
+                for (int j = 0; j < alphabet.length(); j++) {
+
+                    // Changes the ith position of the wordHolder with the jth letter of the alphabet.
+                    possibleNewWord = wordHolder;
+                    possibleNewWord[i] = alphabet[j];
+
+                    if (!setOfWords.contains(possibleNewWord) && english.contains(possibleNewWord)) {
+
+                        // Updates a set, a stack and the queue with the stack words with the new word.
+                        setOfWords.add(possibleNewWord);
+                        updatedStack = partialLadderHolder;
+                        updatedStack.push(possibleNewWord);
+                        ladderWithWords.enqueue(updatedStack);
+                    }
+                }
+            }
+        }
     }
 
-}
+    // Prints statement if no ladder was found.
+    cout << "No word ladder found from " << wordTwo << " back to " << wordOne << "." << endl;
+  }
+
+
 
 int main() {
     cout << "Welcome to CS 106 Word Ladder \n";
@@ -109,38 +183,20 @@ int main() {
     Lexicon english(fileName);
 
     // Generates two valid english words of the same size.
+
     while(wordOne.length() >0 && wordTwo.length() >0) {
         wordOne = getLine("Word #1 (or Enter to quit): ");
+
         if(wordOne.length() >0) {
             wordsOutput(wordOne, wordTwo, english);
-            if (wordOne.length() >0 && wordOne.length() >0) {
-                cout << "yeah " << endl;
+
+            if (wordOne.length() >0 && wordTwo.length() >0) {
+                // Generates the ladder of words using the algorithm.
+                ladder(wordOne, wordTwo, english);
             }
-        }
-        else {
-            wordTwo = "";
         }
     }
 
-    /*
-     *  Finding a word ladder between words w1 and w2:
-     *  Create an empty queue of stacks.
-        Create/add a stack containing {w1} to the queue. While the queue is not empty:
-            Dequeue the partial-ladder stack from the front of the queue.
-            For each valid English word that is a "neighbor" (differs by 1 letter)
-            of the word on top of the stack:
-                If that neighbor word has not already been used in a ladder before:
-                    If the neighbor word is w2:
-                        Hooray! we have found a solution (and it is the stack you are working on in the queue).
-                    Otherwise:
-                        Create a copy of the current partial-ladder stack.
-                        Put the neighbor word on top of the copy stack.
-                 Add the copy stack to the end of the queue.
-
-                 */
-
-
-
-    cout << "Have a nice day." << endl;
+    cout << "\nHave a nice day." << endl;
     return 0;
 }
