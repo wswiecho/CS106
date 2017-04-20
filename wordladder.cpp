@@ -20,79 +20,59 @@ using namespace std;
 
 // Reads the input file from the user.
 void fileRead(string &fileName) {
+    ifstream inputFile;
     fileName = getLine("Dictionary file name? ");
             while (fileName != "dictionary.txt") {
-                cout << "The filename you entered for the dictionary was incorrect. Try again." << endl;
+                cout << "Unable to open that file. Try again." << endl;
                 fileName = getLine("Dictionary file name? ");
             }
+
+    // Checks if the dictionary file opens correctly.
+    inputFile.open(fileName);
+
+    if(inputFile.fail()) {
+        cout << "Failed to open dictionary.txt";
+    }
+    inputFile.close();
+}
+
+// Changes the letters in a word to lower case.
+void allLowerCase(string &word) {
+    for(int i=0; i< word.length(); i++) {
+        word[i] = tolower(word[i]);
+    }
 }
 
 // Checks if a given input word is in the dictionary.
-void wordInDict(string &word, Lexicon::Lexicon &english, string num) {
-    string combination = "Word #"+ num +" (or Enter to quit): ";
-    if(word.length()>0) {
-        for(int i=0; i< word.length(); i++) {
-            word[i] = tolower(word[i]);
-        }
+bool wordInDict(string &wordOne, string &wordTwo, Lexicon::Lexicon &english) {
+    bool value = true;
+    allLowerCase(wordOne);
+    allLowerCase(wordTwo);
 
+    if(!english.contains(wordOne) && !english.contains(wordTwo)) {
+        cout << "The two words must be found in the dictionary. \n";
+        value = false;
     }
-    while(!english.contains(word) && word.length() >0) {
-        cout << "The word you entered is not valid. Try again. \n";
-        word = getLine(combination);
-    }
+
+    return value;
 }
 
-// Checks if words 1 and 2 are different.
-string theSameWords(string &wordOne, string &wordTwo, Lexicon::Lexicon &english){
-    while(wordOne.compare(wordTwo) == 0 && wordOne.length()>0) {
-        cout << "Word #2 must be different than Word #1." << endl;
-        wordTwo = getLine("Word #2 (or Enter to quit): ");
-        wordInDict(wordTwo, english, "2");
+// Checks if the entered words are different.
+bool theSameWords(string &wordOne, string &wordTwo, Lexicon::Lexicon &english) {
+    bool value = true;
+    if(wordOne.compare(wordTwo) == 0) {
+        cout << "The words must be different. \n";
+        value = false;
     }
-
-    return wordTwo;
+    return value;
 }
 
-void wordsOutput(string &wordOne, string &wordTwo, Lexicon::Lexicon &english) {
-
-    wordInDict(wordOne, english, "1");
-
-    if (wordOne.length() > 0) {
-
-        // Prompts the user for the second word.
-        wordTwo = getLine("Word #2 (or Enter to quit): ");
-        wordInDict(wordTwo, english, "2");
-
-        // Checks if the word entered is valid.
-        int comparison = wordOne.compare(wordTwo);
-
-        // Reprompts the user if Word #1 and Word #2 are the same.
-        wordTwo = theSameWords(wordOne, wordTwo, english);
-
-        while(wordOne.length() != wordTwo.length() && wordTwo.length()!=0) {
-
-            if(wordOne.length() != wordTwo.length()) {
-
-                cout << "The length of Word # 2 is incorrect. Enter a word of length "
-                 << wordOne.length() << "." << endl;
-            }
-
-            else {
-                cout << "Invalid word." << endl;
-            }
-
-            // Reprompts the user for new Word #2.
-            wordTwo = getLine("Word #2 (or Enter to quit): ");
-            wordInDict(wordTwo, english, "2");
-            wordTwo = theSameWords(wordOne, wordTwo, english);
-        }
-    }
-}
 
 // Generates the ladder of words using the algorithm.
 void ladder(string wordOne, string wordTwo, Lexicon::Lexicon &english) {
 
     // Defines all structures that will be used in this function.
+    int idx = 0;
     Set<string> setOfWords;
     Stack<string> initialStack, partialLadderHolder, updatedStack;
     string possibleNewWord, wordHolder;
@@ -130,6 +110,8 @@ void ladder(string wordOne, string wordTwo, Lexicon::Lexicon &english) {
             }
 
             cout << "\n";
+            idx = 1;
+
         }
 
         /* Gets the neighboring words by iterating over the original word and
@@ -159,12 +141,20 @@ void ladder(string wordOne, string wordTwo, Lexicon::Lexicon &english) {
             }
         }
     }
-
-    // Prints statement if no ladder was found.
-    cout << "No word ladder found from " << wordTwo << " back to " << wordOne << "." << endl;
+    if (idx == 0) {
+        // Prints statement if no ladder was found.
+        cout << "No word ladder found from " << wordTwo << " back to " << wordOne << "." << endl;
+    }
   }
 
-
+bool sameLength(string &wordOne, string &wordTwo) {
+    bool value = true;
+    if(wordOne.length() != wordTwo.length()) {
+        cout << "The two words must be the same length. \n";
+        value = false;
+    }
+    return value;
+}
 
 int main() {
     cout << "Welcome to CS 106 Word Ladder \n";
@@ -182,21 +172,25 @@ int main() {
     // Defines the Lexicon
     Lexicon english(fileName);
 
-    // Generates two valid english words of the same size.
-
+    // Runs the loop for words input and possibly prints the word ladder if input was valid.
     while(wordOne.length() >0 && wordTwo.length() >0) {
+        cout << "\n";
         wordOne = getLine("Word #1 (or Enter to quit): ");
 
         if(wordOne.length() >0) {
-            wordsOutput(wordOne, wordTwo, english);
+            wordTwo = getLine("Word #2 (or Enter to quit): ");
 
-            if (wordOne.length() >0 && wordTwo.length() >0) {
-                // Generates the ladder of words using the algorithm.
-                ladder(wordOne, wordTwo, english);
+            if (wordTwo.length() > 0) {
+
+                // Checks if the words entered meet all the conditions and prints the word ladder.
+                if (wordInDict(wordOne, wordTwo, english) && theSameWords(wordOne, wordTwo, english)
+                        && sameLength(wordOne, wordTwo)) {
+                        ladder(wordOne, wordTwo, english);
+                }
             }
         }
     }
 
-    cout << "\nHave a nice day." << endl;
+    cout << "Have a nice day." << endl;
     return 0;
 }
