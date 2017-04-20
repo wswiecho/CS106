@@ -1,4 +1,14 @@
-// Ngram
+/* This program reads an input file from a user and uses it to build an N-gram. That structure is
+ * used for random generation of text that is similar to the text in the input file. To achieve
+ * that, the program uses a set of structures but mostly concentrates on the use of maps and
+ * vectors to store series of words and possible associations between consecutive words or group
+ * of words.
+ *
+ * The N-gram generation is obtained using the extractData and wrapping functions. There are
+ * also numerous functions that handle user input and possible errors (like readFile, or
+ * getNumberOfWords). Finally, there is a function PrintWords that displays the random text
+ * of spesific size in the consol.
+ */
 
 #include <cctype>
 #include <cmath>
@@ -32,7 +42,7 @@ void readFile(ifstream &inputFile) {
 
 // Wrapping around of the gramMap by connecting the last N-1 prefixes in the end
 // of the file with the first N-1 words at the start of the file.
-void Wrapping(Map<Vector<string>, Vector<string> > & nGram, Vector<string> initialWords, Vector<string> wordsWindow) {
+void wrapping(Map<Vector<string>, Vector<string> > & nGram, Vector<string> initialWords, Vector<string> wordsWindow) {
 
     for (int i = 0; i < initialWords.size(); i++)
     {
@@ -89,7 +99,7 @@ void extractData(Map<Vector<string>, Vector<string> > & nGram, ifstream & input,
     }
 
     // Wrapping around of the gramMap.
-    Wrapping(nGram, initialWords, wordsWindow);
+    wrapping(nGram, initialWords, wordsWindow);
 }
 
 // Gets the right number of words for the N-gram.
@@ -102,7 +112,7 @@ void getNumberOfWords(int &numberOfWords, bool &value, int &nValue) {
     // Reprompts the user for the new number of words if number entered is not
     // at least N.
     else if (numberOfWords < nValue) {
-        cout << "Number of words must be at least N. \n";
+        cout << "Must be at least " <<  nValue << " words. \n";
         numberOfWords= getInteger("# of random words to generate (0 to quit)? ");
     }
 }
@@ -132,8 +142,9 @@ void PrintWords(int &numberOfWords, int &randNumber, Vector<string> &wordsWindow
     cout << "..." << endl;
 }
 
-
-
+// Calls different functions to generate the Ngram, promt user for
+// corect input and display the random text based on the size of
+// the N-gram and number of words selected.
 int main() {
     cout << "Welcome to CS 106B Random Writer ('N-Grams'). \n";
     cout << "This program makes random text based on a document. \n";
@@ -154,8 +165,8 @@ int main() {
 
     nValue = getInteger("Value of N? ");
     // Checks if N>1.
-    if (nValue < 2) {
-        cout << "Value must be greater than 1. Try again. \n";
+    while (nValue < 2) {
+        cout << "N must be 2 or greater. \n";
         nValue = getInteger("Value of N? ");
     }
 
