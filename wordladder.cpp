@@ -1,6 +1,15 @@
-// This is the CPP file you will edit and turn in.
-// Also remove these comments here and add your own.
-// TODO: remove this comment header
+/* This program repeatedly prompts the user for two words to ultimately find a minimum-length
+ * ladder between the two entered words. The program is writtien in such a way that words are
+ * checked against english dictionary (wordInDict()), if they are of the same length (sameLength())
+ * and finally if they are in fact different words (theSameWords()).To achieve that, the program
+ * uses a set of structures but mostly concentrates on the use of queues, sets and stacks
+ * to store a series of words.
+ *
+ * The shortest ladder is produced using a given algorithm which was translated into the function
+ * ladder(). That function is exectured only when the two words meet all the conditions. The
+ * ladder() prints the shortes word path between the two words if such exists, if not a message
+ * of nonexistance is printed instead.
+ */
 
 #include <cctype>
 #include <cmath>
@@ -28,7 +37,7 @@ void fileRead(string &fileName) {
             }
 
     // Checks if the dictionary file opens correctly.
-    inputFile.open(fileName);
+    inputFile.open(fileName.c_str());
 
     if(inputFile.fail()) {
         cout << "Failed to open dictionary.txt";
@@ -111,7 +120,6 @@ void ladder(string wordOne, string wordTwo, Lexicon::Lexicon &english) {
 
             cout << "\n";
             idx = 1;
-
         }
 
         /* Gets the neighboring words by iterating over the original word and
