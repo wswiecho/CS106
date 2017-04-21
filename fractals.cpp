@@ -16,8 +16,6 @@ using namespace std;
 const int LEAF_COLOR = 0x2e8b57;   /* Color of all leaves of recursive tree (level 1) */
 const int BRANCH_COLOR = 0x8b7765; /* Color of all branches of recursive tree (level >=2) */
 
-
-
 /**
  * Draws a Sierpinski triangle of the specified size and order, placing its
  * top-left corner at position (x, y).
@@ -119,11 +117,33 @@ void mandelbrotSet(GWindow& gw, double minX, double incX,
 
     int width = gw.getCanvasWidth();
     int height = gw.getCanvasHeight();
-    GBufferedImage image(width,height,0xffffff);
+    GBufferedImage image(width, height, 0xffffff);
     gw.add(&image);
     Grid<int> pixels = image.toGrid(); // Convert image to grid
 
     // TODO: Put your Mandelbrot Set code here
+    // iterating over the cols
+    for(int i=0; i< width; i++) {
+        // Iterating over the rows
+        for(int j=0; j<height; j++) {
+
+
+            // Calls the mandelbortSetInterations to get the iter
+            Complex c(minX + i*incX, minY + j*incY);
+            //cout << "real part of c" << c.realPart() << endl;
+            //cout << "imaginary part of c" <<c.imagPart() << endl;
+            int iter = mandelbrotSetIterations(c, maxIterations);
+            if (iter == 0) {
+            pixels[j][i] = palette[iter % palette.size()];
+            }
+            else {
+                pixels[j][i] =iter;
+            }
+        }
+    }
+
+
+
 
     image.fromGrid(pixels); // Converts and puts the grid back into the image
 }
@@ -139,8 +159,13 @@ void mandelbrotSet(GWindow& gw, double minX, double incX,
  * @return number of iterations needed to determine if c is unbounded
  */
 int mandelbrotSetIterations(Complex c, int maxIterations) {
-    // TODO: Write this function
-    return 0; // Only here to make this compile
+    // Initiates z0=0;
+    Complex z(0,0);
+    //cout << abs(z) << endl;
+
+    int iter = mandelbrotSetIterations(z, c, maxIterations);
+
+    return abs(iter-maxIterations); // Only here to make this compile
 }
 /**
  * An iteration of the Mandelbrot Set recursive formula with given values z and c, to
@@ -155,7 +180,22 @@ int mandelbrotSetIterations(Complex c, int maxIterations) {
  */
 int mandelbrotSetIterations(Complex z, Complex c, int remainingIterations) {
     // TODO: write this function
-    return 0; // Only here to make this compile
+    int iter = remainingIterations;
+    // Base case
+    //double norm =
+    //cout << cpx.realPart(z) << endl;
+
+    if(200-iter == 200 && z.abs() <4) {
+        iter =  200;
+    }
+    if (200-iter < 200 || z.abs() > 4) {
+        iter =  200-iter;
+    }
+    if(200-iter < 200 && z.abs() < 4) {
+        z = z*z + c;
+        iter = mandelbrotSetIterations(z, c, remainingIterations -1);
+   }
+    return iter;
 }
 
 // Helper function to set the palette
@@ -168,14 +208,14 @@ Vector<int> setPalette() {
 
     // Example palettes:
     // http://www.colourlovers.com/palette/4480793/in_the_middle
-    // string colorSt = "#A0B965,#908F84,#BF3C43,#9D8E70,#C9BE91,#A0B965,#908F84,#BF3C43";
+    //string colorSt = "#A0B965,#908F84,#BF3C43,#9D8E70,#C9BE91,#A0B965,#908F84,#BF3C43";
 
     // http://www.colourlovers.com/palette/4480786/Classy_Glass
-    // string colorSt = "#9AB0E9,#C47624,#25269A,#B72202,#00002E,#9AB0E9,#C47624,#25269A";
+    string colorSt = "#9AB0E9,#C47624,#25269A,#B72202,#00002E,#9AB0E9,#C47624,#25269A";
 
     // The following is the "Hope" palette:
     // http://www.colourlovers.com/palette/524048/Hope
-    string colorSt =  "#04182B,#5A8C8C,#F2D99D,#738585,#AB1111,#04182B,#5A8C8C,#F2D99D";
+    //string colorSt =  "#04182B,#5A8C8C,#F2D99D,#738585,#AB1111,#04182B,#5A8C8C,#F2D99D";
     Vector<string>colorsStrVec = stringSplit(colorSt,",");
     for (string color : colorsStrVec) {
         colors.add(convertColorToRGB(trim(color)));
