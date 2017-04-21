@@ -35,27 +35,26 @@ void drawSierpinskiTriangle(GWindow& gw, double x, double y, double size, int or
         throw "Input values must be nonnegative.";
     }
 
-    if (order > 0) {
+    // Base case draws a single trainlge of order 1.
+    if (order == 1) {
+        // draw the triangle
+        double x1 = x + size;
+        double x2 = x + size / 2;
+        double y2 = y + sqrt(3)* size / 2;
+        gw.drawLine(x, y, x1, y);
+        gw.drawLine(x, y, x2, y2);
+        gw.drawLine(x1, y, x2, y2);
+    }
 
-    //compute triangle points
-    double x0 = x;
-    double y0 = y;
-    double x1 = x0 + size;
-    double y1 = y0;
-    double x2 = x0 + size / 2;
-    double y2 = y0 + sqrt(3)* size / 2;
-
-    // draw the triangle
-    gw.drawLine(x0, y0, x1, y1);
-    gw.drawLine(x0, y0, x2, y2);
-    gw.drawLine(x1, y1, x2, y2);
-
-
-    //recursive calls
-    drawSierpinskiTriangle(gw, x0, y0, size / 2, order-1);
-    drawSierpinskiTriangle(gw, (x0 + x1) / 2, (y0 + y1) / 2, size / 2, order-1);
-    drawSierpinskiTriangle(gw, (x0 + x2) / 2, (y0 + y2) / 2, size / 2, order-1);
-}
+    // Draws three triangles of order: order-1.
+    if (order > 1) {
+        double x1 = x + size/2;
+        double x2 = x + size / 4;
+        double y2 = y + sqrt(3)* size / 4;
+        drawSierpinskiTriangle(gw, x, y, size/2, order-1);
+        drawSierpinskiTriangle(gw, x1, y, size/2, order-1);
+        drawSierpinskiTriangle(gw, x2, y2, size/2, order-1);
+    }
 
 }
 
@@ -121,29 +120,34 @@ void mandelbrotSet(GWindow& gw, double minX, double incX,
     gw.add(&image);
     Grid<int> pixels = image.toGrid(); // Convert image to grid
 
-    // TODO: Put your Mandelbrot Set code here
-    // iterating over the cols
+    // Iterates over cols and rows of the grid to check if particular pixel
+    // is inside of the Madelbrot set.
     for(int i=0; i< width; i++) {
-        // Iterating over the rows
+
         for(int j=0; j<height; j++) {
 
 
-            // Calls the mandelbortSetInterations to get the iter
+            // Calls the mandelbortSetInterations to get the number of 
+            // iterations necessary to determine if c diverges.
             Complex c(minX + i*incX, minY + j*incY);
-            //cout << "real part of c" << c.realPart() << endl;
-            //cout << "imaginary part of c" <<c.imagPart() << endl;
             int iter = mandelbrotSetIterations(c, maxIterations);
+
+            // Defines colors of each pixel within the grid.
             if (iter == 0) {
-            pixels[j][i] = palette[iter % palette.size()];
+                if (color==0) {
+                    pixels[j][i] = palette[iter % palette.size()];
+                }
+                
+                else {
+                    pixels[j][i] = color;
+                }
             }
-            else {
-                pixels[j][i] =iter;
+
+            else if (color == 0) {
+                pixels[j][i] = palette[iter % palette.size()];
             }
         }
     }
-
-
-
 
     image.fromGrid(pixels); // Converts and puts the grid back into the image
 }
@@ -158,14 +162,12 @@ void mandelbrotSet(GWindow& gw, double minX, double incX,
  * @param maxIterations - The maximum number of iterations to run recursive step
  * @return number of iterations needed to determine if c is unbounded
  */
+
+// Initiates z=0 and calls the recurseve helper function passing z, c and the max
+// number of iterations.
 int mandelbrotSetIterations(Complex c, int maxIterations) {
-    // Initiates z0=0;
     Complex z(0,0);
-    //cout << abs(z) << endl;
-
-    int iter = mandelbrotSetIterations(z, c, maxIterations);
-
-    return abs(iter-maxIterations); // Only here to make this compile
+    return mandelbrotSetIterations(z, c, maxIterations);
 }
 /**
  * An iteration of the Mandelbrot Set recursive formula with given values z and c, to
@@ -178,44 +180,25 @@ int mandelbrotSetIterations(Complex c, int maxIterations) {
  * @param remainingIterations - The remaining number of iterations to run recursive step
  * @return number of iterations needed to determine if c is unbounded
  */
-int mandelbrotSetIterations(Complex z, Complex c, int remainingIterations) {
-    // TODO: write this function
-    int iter = remainingIterations;
-    // Base case
-    //double norm =
-    //cout << cpx.realPart(z) << endl;
 
-    if(200-iter == 200 && z.abs() <4) {
-        iter =  200;
-    }
-    if (200-iter < 200 || z.abs() > 4) {
-        iter =  200-iter;
-    }
-    if(200-iter < 200 && z.abs() < 4) {
+// Recursion function to find if the paricular value of c diverges.
+int mandelbrotSetIterations(Complex z, Complex c, int remainingIterations) {
+
+    // base assumption.
+    int iter = remainingIterations;
+
+    if (z.abs() < 4 && remainingIterations > 0) {
         z = z*z + c;
-        iter = mandelbrotSetIterations(z, c, remainingIterations -1);
-   }
+        iter = mandelbrotSetIterations(z, c, remainingIterations - 1);
+    }
+
     return iter;
 }
 
 // Helper function to set the palette
 Vector<int> setPalette() {
     Vector<int> colors;
-
-    // Feel free to replace with any palette.
-    // You can find palettes at:
-    // http://www.colourlovers.com/palettes
-
-    // Example palettes:
-    // http://www.colourlovers.com/palette/4480793/in_the_middle
-    //string colorSt = "#A0B965,#908F84,#BF3C43,#9D8E70,#C9BE91,#A0B965,#908F84,#BF3C43";
-
-    // http://www.colourlovers.com/palette/4480786/Classy_Glass
-    string colorSt = "#9AB0E9,#C47624,#25269A,#B72202,#00002E,#9AB0E9,#C47624,#25269A";
-
-    // The following is the "Hope" palette:
-    // http://www.colourlovers.com/palette/524048/Hope
-    //string colorSt =  "#04182B,#5A8C8C,#F2D99D,#738585,#AB1111,#04182B,#5A8C8C,#F2D99D";
+    string colorSt =  "#04182B,#5A8C8C,#F2D99D,#738585,#AB1111,#04182B,#5A8C8C,#F2D99D";
     Vector<string>colorsStrVec = stringSplit(colorSt,",");
     for (string color : colorsStrVec) {
         colors.add(convertColorToRGB(trim(color)));
