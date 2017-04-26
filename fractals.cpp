@@ -1,4 +1,4 @@
-/*
+*
  * File: fractals.cpp
  * --------------------------
  * Name: Weronika J Swiechowicz
@@ -6,14 +6,20 @@
  * This file contains fractal problems for CS106B.
  *
  * Professor allowed to change one of the conditions for the exceptions. That is, if size <=0
- * the drawSierpinskiTriangle() and drawTree() functions will throw an exception.
+ * the drawSierpinskiTriangle(), drawSquares() and drawTree() functions will throw an exception.
+ *
+ *
+ * I completed multiple extensions. I changed the colors of the traingles in the drawSierpinskiTriangle()
+ * functions using recursion to define a random color (see code in lines 44-51). That function is used
+ * directly in the drawSierpinskiTriangle() and drawSquares(). The drawSquares() function is in itself
+ * an additional option for fractal design (see code in lines 90-122). Finally added a rule to define
+ * the maxIterations in lines 196-197.
  */
 
 #include "fractals.h"
 #include <cmath>
 #include <math.h>
 #include <ctime>
-//#include <omp.h>
 
 using namespace std;
 
@@ -57,7 +63,6 @@ void drawSierpinskiTriangle(GWindow& gw, double x, double y, double size, int or
         throw "Input values must be nonnegative and in addition size must be strictly positive.";
     }
 
-
     // Base case draws a single trainlge of order 1.
     if (order == 1) {
         // draw the triangle
@@ -78,7 +83,6 @@ void drawSierpinskiTriangle(GWindow& gw, double x, double y, double size, int or
         drawSierpinskiTriangle(gw, x1, y, size/2, order-1);
         drawSierpinskiTriangle(gw, x2, y2, size/2, order-1);
     }
-
 }
 
 // Draws different color Sierpinski traingles wihout overlapping lines drawing three order-1
@@ -93,37 +97,28 @@ void drawSquares(GWindow& gw, double x, double y, double size, int order) {
         throw "Input values must be nonnegative and in addition size must be strictly positive.";
     }
 
-
-
     if (order == 1) {
         int n = randomInteger(0, 999999);
         gw.setColor("#"+colorString(to_string(n)));
         gw.drawRect(x,y,size, size);
         gw.drawOval(x, y, size, size);
-
     }
 
     if (order > 1) {
-        double x1 = x;
         double y1 = y + 2*size/3;
         double x2 = x + size/3;
         double y2 = y + size/3;
         double x3 = x + 2*size/3;
-        double y3 = y;
-        double x4 = x + 2*size/3;
-        double y4 = y + 2*size/3;
         drawSquares(gw, x, y, size/3, order-1);
-        drawSquares(gw, x1, y1, size/3, order-1);
+        drawSquares(gw, x, y1, size/3, order-1);
         drawSquares(gw, x2, y2, size/3, order-1);
-        drawSquares(gw, x3, y3, size/3, order-1);
-        drawSquares(gw, x4, y4, size/3, order-1);
+        drawSquares(gw, x3, y, size/3, order-1);
+        drawSquares(gw, x3, y1, size/3, order-1);
         drawSquares(gw, x+5*size/12, y+size/12, size/6, order-1);
         drawSquares(gw, x+5*size/12, y+size/12 +2*size/ 3, size/6, order-1);
         drawSquares(gw, x+size/12, y+size/12+ size/ 3, size/6, order-1);
         drawSquares(gw, x+size/12 +2*size/ 3, y+size/12+ size/ 3, size/6, order-1);
-
     }
-
 }
 
 /**
@@ -186,7 +181,6 @@ void drawTree(GWindow& gw, double x, double y, double size, int order) {
  * @param color - The color of the fractal; zero if palette is to be used
  */
 
-
 void mandelbrotSet(GWindow& gw, double minX, double incX,
                    double minY, double incY, int maxIterations, int color) {
 
@@ -198,21 +192,13 @@ void mandelbrotSet(GWindow& gw, double minX, double incX,
     gw.add(&image);
     Grid<int> pixels = image.toGrid(); // Convert image to grid
 
-    // Iterates over cols and rows of the grid to check if particular pixel
-    // is inside of the Madelbrot set.
-    int start_s=clock();
 
-    // sets the maximum number of iterations beased on the given parameters.
+    // Sets the maximum number of iterations beased on the given parameters.
     // The increase in the number of iterations is superlinear.
     int boundIterations = sqrt((width+height)/(minX+minY));
     if (maxIterations < boundIterations) maxIterations = boundIterations;
 
-    //omp_set_nested(1);       // Enable nested parallelism
-    //omp_set_num_threads(5);
-    //#pragma omp parallel for
     for(int i=0; i< width; i++) {
-
-        //#pragma omp parallel for
         for(int j=0; j<height; j++) {
             // Calls the mandelbortSetInterations to get the number of
             // iterations necessary to determine if c diverges.
@@ -227,8 +213,7 @@ void mandelbrotSet(GWindow& gw, double minX, double incX,
             else if (color == 0) pixels[j][i] = palette[iter % palette.size()];
         }
     }
-    int stop_s=clock();
-    cout << "time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC) << endl;
+
     image.fromGrid(pixels); // Converts and puts the grid back into the image
 }
 
