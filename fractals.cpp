@@ -1,15 +1,19 @@
 /*
  * File: fractals.cpp
  * --------------------------
- * Name:
- * Section leader:
+ * Name: Weronika J Swiechowicz
+ * Section leader: John Pericich
  * This file contains fractal problems for CS106B.
+ *
+ * Professor allowed to change one of the conditions for the exceptions. That is, if size <=0
+ * the drawSierpinskiTriangle() and drawTree() functions will throw an exception.
  */
-
 
 #include "fractals.h"
 #include <cmath>
 #include <math.h>
+#include <ctime>
+//#include <omp.h>
 
 using namespace std;
 
@@ -28,11 +32,28 @@ const int BRANCH_COLOR = 0x8b7765; /* Color of all branches of recursive tree (l
  * @param size - The length of one side of the triangle.
  * @param order - The order of the fractal.
  */
-void drawSierpinskiTriangle(GWindow& gw, double x, double y, double size, int order) {
-    // TODO: write this function
 
-    if (x < 0 || y < 0 || size < 0 || order < 0) {
-        throw "Input values must be nonnegative.";
+// Recursively define the color string by inserting a random digit into a
+// random index in the interval [0, size of string].
+string colorString(string color) {
+    if(color.length() < 6) {
+        int idx = randomInteger(0, color.length());
+        color.insert(idx, to_string(randomInteger(0, 9)));
+        colorString(color);
+    }
+    return color;
+}
+
+// Draws different color Sierpinski traingles wihout overlapping lines drawing three order-1
+// trangles unless order=1 then it draws a single trangles. Else it throws an error.
+void drawSierpinskiTriangle(GWindow& gw, double x, double y, double size, int order) {
+
+    // Defines a random color of a tringle.
+    int n = randomInteger(0, 999999);
+    gw.setColor("#"+colorString(to_string(n)));
+
+    if (x < 0 || y < 0 || size <= 0 || order < 0) {
+        throw "Input values must be nonnegative and in addition size must be strictly positive.";
     }
 
     // Base case draws a single trainlge of order 1.
@@ -55,7 +76,6 @@ void drawSierpinskiTriangle(GWindow& gw, double x, double y, double size, int or
         drawSierpinskiTriangle(gw, x1, y, size/2, order-1);
         drawSierpinskiTriangle(gw, x2, y2, size/2, order-1);
     }
-
 }
 
 /**
@@ -71,25 +91,36 @@ void drawSierpinskiTriangle(GWindow& gw, double x, double y, double size, int or
  * @param order - The order of the fractal.
  */
 
-void drawTreeHelper(GWindow& gw, double x1, double y1, double size, int order, double angle) {
-    if (order == 0) return;
-    int x2 = x1 + (int) (sin(angle*M_PI/180) * size);
-    int y2 = y1 - (int) (cos(angle*M_PI/180) * size);
+// Helper function that draws each new level of the tree at the angle angle.
+void drawTree(GWindow& gw, double x1, double y1, double size, int order, double angle) {
+
+    // Defines the coordinates of the endpoint of the line that starts at (x1, y1).
+    double x2 = x1 + sin(angle*M_PI/180) * size;
+    double y2 = y1 - cos(angle*M_PI/180) * size;
+
+    // Defines the colors of the branch
     if (order == 1) gw.setColor("#2e8b57");
     else gw.setColor("#8b7765");
-    gw.drawLine(x1, y1, x2, y2);
-    drawTreeHelper(gw, x2, y2, size/2, order - 1, angle -45);
-    drawTreeHelper(gw, x2, y2, size/2, order - 1, angle -30);
-    drawTreeHelper(gw, x2, y2, size/2, order - 1, angle -15);
-    drawTreeHelper(gw, x2, y2, size/2, order - 1, angle - 0);
-    drawTreeHelper(gw, x2, y2, size/2, order - 1, angle +15);
-    drawTreeHelper(gw, x2, y2, size/2, order - 1, angle +30);
-    drawTreeHelper(gw, x2, y2, size/2, order - 1, angle +45);
+
+    // Draws branches.
+    if (order>0) {
+        gw.drawLine(x1, y1, x2, y2);
+        drawTree(gw, x2, y2, size/2, order - 1, angle -45);
+        drawTree(gw, x2, y2, size/2, order - 1, angle -30);
+        drawTree(gw, x2, y2, size/2, order - 1, angle -15);
+        drawTree(gw, x2, y2, size/2, order - 1, angle - 0);
+        drawTree(gw, x2, y2, size/2, order - 1, angle +15);
+        drawTree(gw, x2, y2, size/2, order - 1, angle +30);
+        drawTree(gw, x2, y2, size/2, order - 1, angle +45);
+    }
 }
 
+// Draws the tree of order order.
 void drawTree(GWindow& gw, double x, double y, double size, int order) {
-    if (order == 0) return;
-    drawTreeHelper(gw, x+size/2, y+size, size/2, order, 0);
+    if (x < 0 || y < 0 || size <= 0 || order < 0) {
+        throw "Input values must be nonnegative and in addition size must be strictly positive.";
+    }
+    drawTree(gw, x+size/2, y+size, size/2, order, 0);
 }
 
 /**
@@ -106,14 +137,13 @@ void drawTree(GWindow& gw, double x, double y, double size, int order) {
  * @param maxIterations - The maximum number of iterations to run recursive step
  * @param color - The color of the fractal; zero if palette is to be used
  */
+
+
 void mandelbrotSet(GWindow& gw, double minX, double incX,
                    double minY, double incY, int maxIterations, int color) {
 
     // Creates palette of colors
-    // To use palette:
-    // pixels[r][c] = palette[numIterations % palette.size()];
     Vector<int> palette = setPalette();
-
     int width = gw.getCanvasWidth();
     int height = gw.getCanvasHeight();
     GBufferedImage image(width, height, 0xffffff);
@@ -122,33 +152,34 @@ void mandelbrotSet(GWindow& gw, double minX, double incX,
 
     // Iterates over cols and rows of the grid to check if particular pixel
     // is inside of the Madelbrot set.
+    int start_s=clock();
+
+    // sets the maximum number of iterations beased on the given parameters.
+    int boundIterations = sqrt((width+height)/(minX+minY));
+    if (maxIterations < boundIterations) maxIterations = boundIterations;
+
+    //omp_set_nested(1);       // Enable nested parallelism
+    //omp_set_num_threads(5);
+    //#pragma omp parallel for
     for(int i=0; i< width; i++) {
 
+        //#pragma omp parallel for
         for(int j=0; j<height; j++) {
-
-
-            // Calls the mandelbortSetInterations to get the number of 
+            // Calls the mandelbortSetInterations to get the number of
             // iterations necessary to determine if c diverges.
             Complex c(minX + i*incX, minY + j*incY);
             int iter = mandelbrotSetIterations(c, maxIterations);
 
             // Defines colors of each pixel within the grid.
             if (iter == 0) {
-                if (color==0) {
-                    pixels[j][i] = palette[iter % palette.size()];
-                }
-                
-                else {
-                    pixels[j][i] = color;
-                }
+                if (color==0) pixels[j][i] = palette[iter % palette.size()];
+                else pixels[j][i] = color;
             }
-
-            else if (color == 0) {
-                pixels[j][i] = palette[iter % palette.size()];
-            }
+            else if (color == 0) pixels[j][i] = palette[iter % palette.size()];
         }
     }
-
+    int stop_s=clock();
+    cout << "time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC) << endl;
     image.fromGrid(pixels); // Converts and puts the grid back into the image
 }
 
@@ -183,15 +214,13 @@ int mandelbrotSetIterations(Complex c, int maxIterations) {
 
 // Recursion function to find if the paricular value of c diverges.
 int mandelbrotSetIterations(Complex z, Complex c, int remainingIterations) {
-
-    // base assumption.
     int iter = remainingIterations;
 
+    // Checks if |z|<4  and number of iterations is less than maxIterations.
     if (z.abs() < 4 && remainingIterations > 0) {
         z = z*z + c;
         iter = mandelbrotSetIterations(z, c, remainingIterations - 1);
     }
-
     return iter;
 }
 
