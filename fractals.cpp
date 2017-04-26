@@ -44,6 +44,7 @@ string colorString(string color) {
     return color;
 }
 
+
 // Draws different color Sierpinski traingles wihout overlapping lines drawing three order-1
 // trangles unless order=1 then it draws a single trangles. Else it throws an error.
 void drawSierpinskiTriangle(GWindow& gw, double x, double y, double size, int order) {
@@ -55,6 +56,7 @@ void drawSierpinskiTriangle(GWindow& gw, double x, double y, double size, int or
     if (x < 0 || y < 0 || size <= 0 || order < 0) {
         throw "Input values must be nonnegative and in addition size must be strictly positive.";
     }
+
 
     // Base case draws a single trainlge of order 1.
     if (order == 1) {
@@ -76,6 +78,52 @@ void drawSierpinskiTriangle(GWindow& gw, double x, double y, double size, int or
         drawSierpinskiTriangle(gw, x1, y, size/2, order-1);
         drawSierpinskiTriangle(gw, x2, y2, size/2, order-1);
     }
+
+}
+
+// Draws different color Sierpinski traingles wihout overlapping lines drawing three order-1
+// trangles unless order=1 then it draws a single trangles. Else it throws an error.
+void drawSquares(GWindow& gw, double x, double y, double size, int order) {
+
+    // Defines a random color of a tringle.
+    int n = randomInteger(0, 999999);
+    gw.setColor("#"+colorString(to_string(n)));
+
+    if (x < 0 || y < 0 || size <= 0 || order < 0) {
+        throw "Input values must be nonnegative and in addition size must be strictly positive.";
+    }
+
+
+
+    if (order == 1) {
+        int n = randomInteger(0, 999999);
+        gw.setColor("#"+colorString(to_string(n)));
+        gw.drawRect(x,y,size, size);
+        gw.drawOval(x, y, size, size);
+
+    }
+
+    if (order > 1) {
+        double x1 = x;
+        double y1 = y + 2*size/3;
+        double x2 = x + size/3;
+        double y2 = y + size/3;
+        double x3 = x + 2*size/3;
+        double y3 = y;
+        double x4 = x + 2*size/3;
+        double y4 = y + 2*size/3;
+        drawSquares(gw, x, y, size/3, order-1);
+        drawSquares(gw, x1, y1, size/3, order-1);
+        drawSquares(gw, x2, y2, size/3, order-1);
+        drawSquares(gw, x3, y3, size/3, order-1);
+        drawSquares(gw, x4, y4, size/3, order-1);
+        drawSquares(gw, x+5*size/12, y+size/12, size/6, order-1);
+        drawSquares(gw, x+5*size/12, y+size/12 +2*size/ 3, size/6, order-1);
+        drawSquares(gw, x+size/12, y+size/12+ size/ 3, size/6, order-1);
+        drawSquares(gw, x+size/12 +2*size/ 3, y+size/12+ size/ 3, size/6, order-1);
+
+    }
+
 }
 
 /**
@@ -155,6 +203,7 @@ void mandelbrotSet(GWindow& gw, double minX, double incX,
     int start_s=clock();
 
     // sets the maximum number of iterations beased on the given parameters.
+    // The increase in the number of iterations is superlinear.
     int boundIterations = sqrt((width+height)/(minX+minY));
     if (maxIterations < boundIterations) maxIterations = boundIterations;
 
@@ -221,6 +270,7 @@ int mandelbrotSetIterations(Complex z, Complex c, int remainingIterations) {
         z = z*z + c;
         iter = mandelbrotSetIterations(z, c, remainingIterations - 1);
     }
+
     return iter;
 }
 
