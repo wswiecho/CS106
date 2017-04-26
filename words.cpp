@@ -4,6 +4,8 @@
  * Name: Weronika J Swiechowicz
  * Section leader: John Pericich
  * This file contains grammar generating code for CS106B.
+ *
+ * I included code for the robust grammar solver extension in lines 50-64.
  */
 
 #include "grammarsolver.h"
@@ -18,12 +20,49 @@
 
 using namespace std;
 
+string noWhiteSpace(string phrase) {
+    for (int i=0; i<(int)phrase.length(); i++) {
+        if(isspace(phrase[i])) {
+            phrase = phrase.substr(0, i) + phrase.substr(i+1, phrase.length()-1);
+            i--;
+        }
+    }
+
+    return phrase;
+}
+
+string addWhiteSpace(string phrase) {
+    for (int i=0; i<(int)phrase.length(); i++) {
+        if( phrase[i] == '>' && phrase[i+1]!='|' && phrase[i+1]!=':') {
+            phrase = phrase.substr(0, i+1) + " " + phrase.substr(i+1, phrase.length()-1);
+            i++;
+        }
+    }
+    return phrase;
+}
 
 // Reads the file in and fills the dictionary with rules and words.
 void readFile(Map< string, Vector < Vector < string > > > &language, istream &inputFile) {
     string phrase;
 
-    while (getline(inputFile, phrase)) {
+    while ( getline( inputFile, phrase ) ) {
+
+        // Strips all white spaces.
+        for ( int i=0; i < (int)phrase.length(); i++ ) {
+            if( phrase[ i ] == '>' && phrase[ i + 1 ] != '|' && phrase[ i + 1 ] != ':' ) {
+                phrase = phrase.substr( 0, i + 1 ) + " " + phrase.substr( i + 1, phrase.length() - 1 );
+                i++;
+            }
+        }
+
+        // Adds white spaces into the right places.
+        for ( int i=0; i < (int)phrase.length(); i++ ) {
+            if( phrase[ i ] == '>' && phrase[ i + 1 ] != '|' && phrase[ i + 1 ] != ':' ) {
+                phrase = phrase.substr( 0, i + 1 ) + " " + phrase.substr( i + 1, phrase.length() - 1 );
+                i++;
+            }
+        }
+
         // Defines all variables used in this loop.
         int rulesSize, tokenSize;
         string allRulesInOne, ruleTokens;
