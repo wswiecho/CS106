@@ -5,7 +5,6 @@
  * Section leader: John Pericich
  * This file contains grammar generating code for CS106B.
  *
- * I included code for the robust grammar solver extension in lines 50-64.
  */
 
 #include "grammarsolver.h"
@@ -20,48 +19,11 @@
 
 using namespace std;
 
-string noWhiteSpace(string phrase) {
-    for (int i=0; i<(int)phrase.length(); i++) {
-        if(isspace(phrase[i])) {
-            phrase = phrase.substr(0, i) + phrase.substr(i+1, phrase.length()-1);
-            i--;
-        }
-    }
-
-    return phrase;
-}
-
-string addWhiteSpace(string phrase) {
-    for (int i=0; i<(int)phrase.length(); i++) {
-        if( phrase[i] == '>' && phrase[i+1]!='|' && phrase[i+1]!=':') {
-            phrase = phrase.substr(0, i+1) + " " + phrase.substr(i+1, phrase.length()-1);
-            i++;
-        }
-    }
-    return phrase;
-}
-
 // Reads the file in and fills the dictionary with rules and words.
 void readFile(Map< string, Vector < Vector < string > > > &language, istream &inputFile) {
     string phrase;
 
     while ( getline( inputFile, phrase ) ) {
-
-        // Strips all white spaces.
-        for ( int i=0; i < (int)phrase.length(); i++ ) {
-            if( phrase[ i ] == '>' && phrase[ i + 1 ] != '|' && phrase[ i + 1 ] != ':' ) {
-                phrase = phrase.substr( 0, i + 1 ) + " " + phrase.substr( i + 1, phrase.length() - 1 );
-                i++;
-            }
-        }
-
-        // Adds white spaces into the right places.
-        for ( int i=0; i < (int)phrase.length(); i++ ) {
-            if( phrase[ i ] == '>' && phrase[ i + 1 ] != '|' && phrase[ i + 1 ] != ':' ) {
-                phrase = phrase.substr( 0, i + 1 ) + " " + phrase.substr( i + 1, phrase.length() - 1 );
-                i++;
-            }
-        }
 
         // Defines all variables used in this loop.
         int rulesSize, tokenSize;
@@ -91,11 +53,10 @@ void readFile(Map< string, Vector < Vector < string > > > &language, istream &in
                  multipleRules.add( definition );
                  rule.add( multipleRules );
             }
-
-            else rule.add( stringSplit( definition, " " ) );
+            else rule.add(stringSplit( definition, " " ) );
         }
 
-        language.put(ruleTokens,rule);
+        language.put(ruleTokens, rule);
     }
 }
 
@@ -149,14 +110,15 @@ Vector< string > grammarGenerate(istream& input, string symbol, int times) {
         Vector< string > addition;
         languageBuilder( language, symbol, addition );
 
-        // Strips {" and "} from the oneExpanded and the following strips the rest
-        // of the quotes (refrenced from http://www.cplusplus.com/reference/string/string/erase/)
-        string wordsSequence = addition.toString().substr(2, addition.toString().length()-4);
-        wordsSequence.erase(
-            remove( wordsSequence.begin(), wordsSequence.end(), '\"' ),
-            wordsSequence.end() );
+        // Strips {" and "} from the wordsSequence and the following strips the rest
+        string wordsSequence = addition.toString().substr(2, addition.toString().length()-4);         
+        for ( int j = 0; j < (int)wordsSequence.length(); j++ ) {
+            if( wordsSequence[ j ] == '\"' && wordsSequence[ j+1 ] == ',') {
+                wordsSequence = wordsSequence.substr( 0, j ) + " " + wordsSequence.substr( j + 4, wordsSequence.length() - 1 );
+                j = j-4;
+            }
+        }
         wordsVector.add( wordsSequence );
     }
-
     return wordsVector;
 }
